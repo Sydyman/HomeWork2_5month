@@ -10,29 +10,31 @@ import com.ex.homework2_5month.presenter.MainPresenter
 class LoveActivity : AppCompatActivity(), LoveView {
 
     private lateinit var binding: ActivityLoveBinding
-    private lateinit var presenter: MainPresenter
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityLoveBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        presenter = MainPresenter(this)
 
-        val firstName = intent.getStringExtra("firstName") ?: ""
-        val secondName = intent.getStringExtra("secondName") ?: ""
+        val fname = intent.getStringExtra("fname")
+        val sname = intent.getStringExtra("sname")
+        val percentage = intent.getStringExtra("percentage")
+        val result = intent.getStringExtra("result")
+        with(binding) {
+            tvFirstName.text = fname
+            tvSecondName.text = sname
+            tvPersantage.text = percentage
+            tvResult.text = result
 
-        if (firstName.isNotEmpty() && secondName.isNotEmpty()) {
-            presenter.getPercentage(firstName, secondName)
+
+            btnTryAgain.setOnClickListener {
+                // Переход обратно на первую Activity
+                val intent = Intent(this@LoveActivity, MainActivity::class.java)
+                startActivity(intent)
+                finish()
+            }
         }
-    }
-
-    override fun showResult(percentage: String, result: String) {
-        binding.tvScore.text = result
-        binding.tvResult.text = percentage
-    }
-
-    override fun showError(message: String) {
-        Toast.makeText(this, "ERROR", Toast.LENGTH_SHORT).show()
     }
 }

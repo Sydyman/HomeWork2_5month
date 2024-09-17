@@ -17,35 +17,57 @@ class MainActivity : AppCompatActivity(), LoveView {
     }
     private lateinit var presenter: MainPresenter
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(binding.root)
-
-        presenter = MainPresenter(this)
-        setUpListener()
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        binding = FragmentFirstBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
-    private fun setUpListener() {
-        binding.btnNext.setOnClickListener {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        initClickers()
+    }
 
-                presenter.getPercentage(binding.etFirst.text.toString(), binding.etSecond.text.toString())
+    private fun initClickers() {
+        with(binding) {
+            btnGetLove.setOnClickListener {
+                RetrofitService.api.getLove(
+                    etFirstName.text.toString(),
+                    etSecondName.text.toString()
+                )
+                    .enqueue(object : Callback<LoveModel> {
+                        override fun onResponse(
+                            call: Call<LoveModel>,
+                            response: Response<LoveModel>
+                        ) {
+                            if (response.isSuccessful) {
+                                val fname = response.body()?.fname
+                                val sname = response.body()?.sname
+                                val percentage = response.body()?.percentage
+                                val result = response.body()?.result
 
+                                // Создаем Intent для перехода в новую Activity
+                                val intent = Intent(requireContext(), SecondActivity::class.java).apply {
+                                    putExtra("fname", fname)
+                                    putExtra("sname", sname)
+                                    putExtra("percentage", percentage)
+                                    putExtra("result", result)
+                                }
 
-                val intent = Intent(this, LoveActivity::class.java).apply {
-                    putExtra("firstName", binding.etFirst.text.toString())
-                    putExtra("secondName", binding.etSecond.text.toString())
-                }
-                startActivity(intent)
+                                // Запускаем SecondActivity
+                                startActivity(intent)
+                            }
+                        }
 
+                        override fun onFailure(call: Call<LoveModel>, t: Throwable) {
+                            Log.e("ololo", "onFailure:${t.message}")
+                        }
+
+                    })
             }
         }
-
-    override fun showResult(percentage: String, result: String) {
-        TODO("Not yet implemented")
-    }
-
-    override fun showError(message: String) {
-        TODO("Not yet implemented")
     }
 }
 
